@@ -16,26 +16,29 @@ import com.vaadin.flow.theme.lumo.LumoUtility.TextColor;
 
 public class BlogGalleryViewCard extends ListItem {
     
-    public BlogGalleryViewCard(String text) {
+    public BlogGalleryViewCard(String title, String subtitle, String description, String date, String uuid) {
         addClassNames(Background.CONTRAST_5, Display.FLEX, FlexDirection.COLUMN, AlignItems.START, Padding.MEDIUM,
                 BorderRadius.LARGE);
         
         Span header = new Span();
         header.addClassNames(FontSize.XLARGE, FontWeight.SEMIBOLD);
-        header.setText("Title");
+        header.setText(title);
         
-        Span subtitle = new Span();
-        subtitle.addClassNames(FontSize.SMALL, TextColor.SECONDARY);
-        subtitle.setText("Card subtitle");
+        Span subtitleSpan = new Span();
+        subtitleSpan.addClassNames(FontSize.SMALL, TextColor.SECONDARY);
+        subtitleSpan.setText(subtitle);
         
-        Paragraph description = new Paragraph(
-                "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut.");
-        description.addClassName(Margin.Vertical.MEDIUM);
+        Paragraph descParagraph = new Paragraph(description);
+        descParagraph.addClassName(Margin.Vertical.MEDIUM);
         
-        Span badge = new Span();
-        badge.getElement().setAttribute("theme", "badge");
-        badge.setText("Label");
+        Span dateBadge = new Span();
+        dateBadge.getElement().setAttribute("theme", "badge");
+        dateBadge.setText("Date: " + date);
         
-        add(header, subtitle, description, badge);
+        Span uuidBadge = new Span();
+        uuidBadge.getElement().setAttribute("theme", "badge");
+        uuidBadge.setText("ID: " + uuid.substring(0, 8) + "..."); // Showing only first 8 chars for brevity
+        
+        add(header, subtitleSpan, descParagraph, dateBadge, uuidBadge);
     }
 }

@@ -1,13 +1,19 @@
 package com.example.application.views.bloggallery;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
+import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Main;
 import com.vaadin.flow.component.html.OrderedList;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
@@ -23,20 +29,36 @@ import com.vaadin.flow.theme.lumo.LumoUtility.MaxWidth;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
 import com.vaadin.flow.theme.lumo.LumoUtility.TextColor;
 
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+
 @PageTitle("Blog Gallery")
 @Route("image-gallery")
 @Menu(order = 1, icon = LineAwesomeIconUrl.GLOBE_AMERICAS_SOLID)
 public class BlogGalleryView extends Main implements HasComponents, HasStyle {
 
     private OrderedList imageContainer;
+    private List<BlogPost> posts = new ArrayList<>();
+
+    private static class BlogPost {
+        String id;
+        String createdAt;
+        String title;
+        String subtitle;
+        String description;
+
+        BlogPost(String id, String createdAt, String title, String subtitle, String description) {
+            this.id = id;
+            this.createdAt = createdAt;
+            this.title = title;
+            this.subtitle = subtitle;
+            this.description = description;
+        }
+    }
 
     public BlogGalleryView() {
         constructUI();
-        imageContainer.add(new BlogGalleryViewCard("Snow covered mountain"));
-        imageContainer.add(new BlogGalleryViewCard("Snow covered mountain"));
-        imageContainer.add(new BlogGalleryViewCard("Snow covered mountain"));
-        imageContainer.add(new BlogGalleryViewCard("Snow covered mountain"));
-        imageContainer.add(new BlogGalleryViewCard("Snow coverred mountain"));
+        fetchPosts();
     }
 
     private void constructUI() {
@@ -68,5 +90,53 @@ public class BlogGalleryView extends Main implements HasComponents, HasStyle {
 
         container.add(headerContainer, sortBy);
         add(container, imageContainer);
+    }
+
+    private void fetchPosts() {
+        UI.getCurrent().getPage().executeJs(
+            "fetch('http://127.0.0.1:6969/api/posts', { " +
+            "  method: 'GET', " +
+            "  headers: { 'Content-Type': 'application/json' } " +
+            "})" +
+            ".then(response => { " +
+            "  if (!response.ok) { " +
+            "    throw new Error('Network response was not ok: ' + response.status); " +
+            "  } " +
+            "  return response.json(); " +
+            "})" +
+            ".then(data => $0.$server.handlePosts(data))" +
+            ".catch(error => $0.$server.handleError(error.message))",
+            getElement()
+        );
+    }
+
+    @ClientCallable
+    private void handlePosts(JsonArray postsArray) {
+        posts.clear();
+        imageContainer.removeAll();
+
+        for (int i = 0; i < postsArray.length(); i++) {
+            JsonObject post = postsArray.getObject(i);
+            BlogPost blogPost = new BlogPost(
+                post.getString("id"),
+                post.getString("createdAt"),
+                post.getString("title"),
+                post.getString("subtitle"),
+                post.getString("description")
+            );
+            posts.add(blogPost);
+            imageContainer.add(new BlogGalleryViewCard(
+                blogPost.title,
+                blogPost.subtitle,
+                blogPost.description,
+                blogPost.createdAt,
+                blogPost.id
+            ));
+        }
+    }
+
+    @ClientCallable
+    private void handleError(String errorMessage) {
+        Notification.show("Failed to fetch posts: " + errorMessage, 5000, Notification.Position.MIDDLE);
     }
 }
