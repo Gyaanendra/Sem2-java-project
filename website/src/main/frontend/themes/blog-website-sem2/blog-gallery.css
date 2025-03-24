@@ -1,0 +1,33 @@
+/* responsive-grid class for the image container */
+.responsive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-gap: var(--lumo-space-m);
+  width: 100%;
+}
+
+/* Header container responsive behavior */
+.gallery-header-container {
+  width: 100%;
+  flex-wrap: wrap;
+  gap: var(--lumo-space-m);
+}
+
+/* Media queries for different screen sizes */
+@media screen and (max-width: 480px) {
+  .responsive-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (min-width: 769px) {
+  .responsive-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
